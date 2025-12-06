@@ -5,6 +5,7 @@ This README documents the user registration integration for the Uber backend ser
 ## Features
 
 - User registration with validation (email, first name, password)
+- User login with email and password authentication
 - Password hashing using bcrypt
 - JWT authentication token generation
 - Modular MVC structure (controllers, models, services, routes)
@@ -43,6 +44,44 @@ Status: 201 Created
 {
   "user": { ...user fields... },
   "token": "<JWT token>"
+}
+```
+
+## User Login Flow
+
+1. **Route**: `POST /login` (see `routes/user.routes.js`)
+2. **Validation**: Checks for valid email and password (min 6 chars)
+3. **Controller**: Validates input, retrieves user by email, compares password hash
+4. **Model**: Queries user from MongoDB with password field selected
+5. **Response**: Returns user and JWT token on successful authentication
+
+## Login Example Request
+
+```
+POST /login
+Content-Type: application/json
+{
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
+}
+```
+
+## Login Example Response
+
+```
+Status: 200 OK
+{
+  "user": { ...user fields... },
+  "token": "<JWT token>"
+}
+```
+
+## Login Error Response
+
+```
+Status: 401 Unauthorized
+{
+  "message": "Invalid email or password"
 }
 ```
 
