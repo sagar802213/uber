@@ -87,16 +87,72 @@ Status: 401 Unauthorized
 
 ## Notes
 
-- All required fields must be provided.
-- Passwords are securely hashed before storage.
-- JWT secret must be set in environment variables (`process.env.JWT_SECRET`).
+- **All required fields must be provided.**
+- **Passwords are securely hashed** before storage using `bcrypt`.
+- **JWT secret** must be set in environment variables (`process.env.JWT_SECRET`).
+
+## User Profile
+
+1. **Route**: `GET /profile` (protected — see `middlewares/auth.middleware`)
+2. **Purpose**: Returns the authenticated user's profile information
+3. **Auth**: Requires a valid JWT provided either in an `Authorization: Bearer <token>` header or a `token` cookie
+
+### Example Request
+
+```
+GET /profile
+Authorization: Bearer <JWT token>
+```
+
+### Example Response
+
+```
+Status: 200 OK
+{
+  "user": { ...user fields... }
+}
+```
+
+## Logout
+
+1. **Route**: `GET /logout` (protected — see `middlewares/auth.middleware`)
+2. **Purpose**: Logs the user out by clearing the `token` cookie and adding the token to a blacklist so it cannot be reused
+3. **Implementation**: Creates an entry in the `BlacklistToken` collection (see `models/blacklistToken.model.js`) and clears the cookie
+
+### Example Request
+
+```
+GET /logout
+Authorization: Bearer <JWT token>
+```
+
+### Example Response
+
+```
+Status: 200 OK
+{
+  "message": "Logged out successfully"
+}
+```
+
+## Blacklist Token
+
+- The project includes a `BlacklistToken` model (`models/blacklistToken.model.js`) which stores tokens that were explicitly logged out. Blacklisted tokens are set to expire after 24 hours using a TTL index on the `blacklistedAt` field.
+- Authentication middleware should check this collection to reject requests that present a blacklisted token.
+
+## Auth Middleware
+
+- The codebase exposes an authentication middleware (e.g. `middlewares/auth.middleware`) used to protect routes. It should:
+  - Validate the JWT signature and expiry
+  - Verify the token is not present in the `BlacklistToken` collection
+  - Attach the user object to `req.user` for downstream handlers
 
 ## Next Steps
 
-- Add login and authentication middleware
-- Implement user profile and update endpoints
-- Add tests for user registration
+- Add automated tests for registration, login, profile, and logout flows
+- Add token refresh / refresh-token endpoint if long sessions are required
+- Harden cookie settings (`httpOnly`, `secure`, `sameSite`) for production
 
 ---
 
-User integration is complete and functional.
+User integration (register, login, profile, logout) is complete and functional.
