@@ -156,3 +156,42 @@ Status: 200 OK
 ---
 
 User integration (register, login, profile, logout) is complete and functional.
+
+## Captain Registration
+
+This project includes a captain registration flow similar to user registration. The captain endpoints live under the `captain` router (see `routes/captain.routes.js`).
+
+1. **Route**: `POST /captain/register` (see `routes/captain.routes.js`)
+2. **Validation**: The route validates:
+   - `email` (must be a valid email)
+   - `fullname.firstname` (min 3 chars)
+   - `password` (min 6 chars)
+   - `vehicle.color` (min 3 chars)
+   - `vehicle.plate` (min 3 chars)
+   - `vehicle.capacity` (integer, min 1)
+   - `vehicle.vehicleType` (one of `car`, `motorcycle`, `auto`)
+3. **Controller**: `controllers/captain.controller.js` checks for existing captain by email, hashes the password, and calls `captain.service` to create the captain model instance.
+4. **Service**: `services/captain.service.js` builds the `captain` document. Note: ensure the service saves the document (e.g. using `await captain.save()` or `captainModel.create(...)`) so the record is persisted.
+
+### Example Request
+
+```
+POST /captain/register
+Content-Type: application/json
+{
+  "fullname": { "firstname": "Alice", "lastname": "Smith" },
+  "email": "alice@example.com",
+  "password": "securePass123",
+  "vehicle": { "color": "Blue", "plate": "ABC123", "capacity": 4, "vehicleType": "car" }
+}
+```
+
+### Example Response
+
+```
+Status: 201 Created
+{
+  "captain": { ...captain fields... },
+  "token": "<JWT token>"
+}
+```
