@@ -195,3 +195,104 @@ Status: 201 Created
   "token": "<JWT token>"
 }
 ```
+
+## Captain Login
+
+1. **Route**: \POST /captain/login\ (see \outes/captain.routes.js\)
+2. **Validation**: Checks for valid email and password (min 6 chars)
+3. **Controller**: Validates input, retrieves captain by email, compares password hash
+4. **Response**: Returns captain and JWT token on successful authentication
+
+### Captain Login Request
+
+\\\
+POST /captain/login
+Content-Type: application/json
+{
+  "email": "alice@example.com",
+  "password": "securePass123"
+}
+\\\
+
+### Captain Login Response
+
+\\\
+Status: 200 OK
+{
+  "captain": { ...captain fields... },
+  "token": "<JWT token>"
+}
+\\\
+
+### Captain Login Error Response
+
+\\\
+Status: 401 Unauthorized
+{
+  "message": "Invalid email or password"
+}
+\\\
+
+## Captain Profile
+
+1. **Route**: \GET /captain/profile\ (protected  requires valid JWT)
+2. **Purpose**: Returns the authenticated captain's profile information including vehicle details
+3. **Auth**: Requires a valid JWT provided either in an \Authorization: Bearer <token>\ header or a \	oken\ cookie
+4. **Middleware**: Uses \uthMiddleware.authCaptain\ to validate token and fetch captain
+
+### Captain Profile Request
+
+\\\
+GET /captain/profile
+Authorization: Bearer <JWT token>
+\\\
+
+### Captain Profile Response
+
+\\\
+Status: 200 OK
+{
+  "captain": {
+    "_id": "...",
+    "fullname": { "firstname": "Alice", "lastname": "Smith" },
+    "email": "alice@example.com",
+    "vehicle": { "color": "Blue", "plate": "ABC123", "capacity": 4, "vehicleType": "car" },
+    "status": "inactive",
+    "location": { "ltd": null, "lng": null }
+  }
+}
+\\\
+
+## Captain Logout
+
+1. **Route**: \GET /captain/logout\ (protected  requires valid JWT)
+2. **Purpose**: Logs the captain out by clearing the \	oken\ cookie and adding the token to the blacklist
+3. **Implementation**: Creates an entry in the \BlacklistToken\ collection and clears the cookie
+4. **Middleware**: Uses \uthMiddleware.authCaptain\ to validate token before logout
+
+### Captain Logout Request
+
+\\\
+GET /captain/logout
+Authorization: Bearer <JWT token>
+\\\
+
+### Captain Logout Response
+
+\\\
+Status: 200 OK
+{
+  "message": "Logged out successfully"
+}
+\\\
+
+### Troubleshooting Captain Endpoints
+
+- **401 Unauthorized on logout/profile**: Ensure your token is valid and not expired. The captain must exist in the database.
+- **No token provided**: Make sure you're sending the JWT token in either:
+  - \Authorization: Bearer <token>\ header, or
+  - \	oken\ cookie (set after login)
+
+---
+
+Captain integration (register, login, profile, logout) is complete and functional.
